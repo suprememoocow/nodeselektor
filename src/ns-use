@@ -1,0 +1,60 @@
+
+# Writes a key=value pair to `.node-selektor`
+write_ini_value() {
+  local key=$1
+  local value=$2
+
+  sed -i '' '/^ *'"${key}"' *=/{
+    h
+    s#=.*#='"${value}"'#
+  }
+  ${
+    x
+    /^$/{
+      s##'"${key}"'='"${value}"'#
+      H
+    }
+    x
+  }' "${nodeselektor_config_file}"
+}
+
+node_path=$1
+
+usage() {
+  log_stderr $0 "nodejs_installation_directory"
+}
+
+if [[ -z "${node_path}" ]]; then
+  usage;
+  exit 1;
+fi
+
+if ! [[ -d "${node_path}" ]]; then
+  log_stderr "${node_path} is not a directory"
+  usage;
+  exit 1;
+fi
+
+if ! [[ -e "${node_path}/bin/node" ]]; then
+  log_stderr "${node_path}/bin/node is not executable"
+  usage;
+  exit 1;
+fi
+
+if ! package_root=$(find_package_root_path .); then
+  log_stderr "Unable to locate package.json"
+  exit 1;
+fi
+
+nodeselektor_config_file="${package_root}/.node-selektor"
+if ! [[ -f "${nodeselektor_config_file}" ]]; then
+  cat <<EOD > ${nodeselektor_config_file}
+; .node-selektor configuration file
+; do not check this into source control
+; add it to `.gitignore`
+EOD
+fi
+
+abs_node_path=$(get_abs_path "${node_path}")
+
+write_ini_value "node_path" "${abs_node_path}"

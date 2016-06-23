@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+# Global Variables
+nodeselektor_root_path=
+nodeselektor_config_file=
+nodeselektor_nodejs_path=
+
+log_stderr() {
+  >&2 echo "$@"
+}
+
+find_root_path() {
+  local from_path=$1
+
+  local current_path
+  current_path=$(get_abs_path "${from_path}")
+
+  while [[ -n "${current_path}" ]] && ! ( [[ -f "${current_path}/.node-selektor" ]] && [[ -f "${current_path}/package.json" ]]); do
+    current_path=${current_path%/*}
+  done
+
+  if [[ -n "${current_path}" ]]; then
+    get_abs_path "${current_path}"
+  else
+    return 1
+  fi
+}
+
+find_package_root_path() {
+  local from_path=$1
+
+  local current_path
+  current_path=$(get_abs_path "${from_path}")
+
+  while [[ -n "${current_path}" ]] && ! [[ -f "${current_path}/package.json" ]] ; do
+    current_path=${current_path%/*}
+  done
+
+  if [[ -n "${current_path}" ]]; then
+    get_abs_path "${current_path}"
+  else
+    return 1
+  fi
+}
+
+# Returns the absolute path for a file
+get_abs_path() {
+  if ! echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"; then
+    log_stderr "Unable to read absolute path: ${1}"
+    return 1
+  fi
+}
+
+read_ini_value() {
+  local key=$1
+
+  awk -F '=' '/^\s*'${key}'\s*=*/ {
+                sub(/^ +/, "", $2);
+                sub(/ +$/, "", $2);
+                print $2;
+                exit;
+              }' "${nodeselektor_config_file}"
+}
+
+# Export environment variables
+set_env_vars() {
+  if [[ -n "${nodeselektor_nodejs_path}" ]]; then
+    export PATH=${nodeselektor_nodejs_path}/bin:$PATH
+    export NPM_CONFIG_PREFIX=${nodeselektor_nodejs_path}
+  fi
+}
+
+# Initialisation
+nodeselektor_init() {
+  local path=$1
+
+  if nodeselektor_root_path=$(find_root_path "${path}"); then
+    nodeselektor_config_file="${nodeselektor_root_path}/.node-selektor"
+    nodeselektor_nodejs_path="$(read_ini_value "node_path")"
+  fi
+
+  set_env_vars
+}
+
+# Writes a key=value pair to `.node-selektor`
+write_ini_value() {
+  local key=$1
+  local value=$2
+
+  sed -i '' '/^ *'"${key}"' *=/{
+    h
+    s#=.*#='"${value}"'#
+  }
+  ${
+    x
+    /^$/{
+      s##'"${key}"'='"${value}"'#
+      H
+    }
+    x
+  }' "${nodeselektor_config_file}"
+}
+
+node_path=$1
+
+usage() {
+  log_stderr $0 "nodejs_installation_directory"
+}
+
+if [[ -z "${node_path}" ]]; then
+  usage;
+  exit 1;
+fi
+
+if ! [[ -d "${node_path}" ]]; then
+  log_stderr "${node_path} is not a directory"
+  usage;
+  exit 1;
+fi
+
+if ! [[ -e "${node_path}/bin/node" ]]; then
+  log_stderr "${node_path}/bin/node is not executable"
+  usage;
+  exit 1;
+fi
+
+if ! package_root=$(find_package_root_path .); then
+  log_stderr "Unable to locate package.json"
+  exit 1;
+fi
+
+nodeselektor_config_file="${package_root}/.node-selektor"
+if ! [[ -f "${nodeselektor_config_file}" ]]; then
+  touch "${nodeselektor_config_file}"
+fi
+
+abs_node_path=$(get_abs_path "${node_path}")
+
+write_ini_value "node_path" "${abs_node_path}"

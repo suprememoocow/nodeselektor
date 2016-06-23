@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+# Global Variables
+nodeselektor_root_path=
+nodeselektor_config_file=
+nodeselektor_nodejs_path=
+
+log_stderr() {
+  >&2 echo "$@"
+}
+
+find_root_path() {
+  local from_path=$1
+
+  local current_path
+  current_path=$(get_abs_path "${from_path}")
+
+  while [[ -n "${current_path}" ]] && ! ( [[ -f "${current_path}/.node-selektor" ]] && [[ -f "${current_path}/package.json" ]]); do
+    current_path=${current_path%/*}
+  done
+
+  if [[ -n "${current_path}" ]]; then
+    get_abs_path "${current_path}"
+  else
+    return 1
+  fi
+}
+
+find_package_root_path() {
+  local from_path=$1
+
+  local current_path
+  current_path=$(get_abs_path "${from_path}")
+
+  while [[ -n "${current_path}" ]] && ! [[ -f "${current_path}/package.json" ]] ; do
+    current_path=${current_path%/*}
+  done
+
+  if [[ -n "${current_path}" ]]; then
+    get_abs_path "${current_path}"
+  else
+    return 1
+  fi
+}
+
+# Returns the absolute path for a file
+get_abs_path() {
+  if ! echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"; then
+    log_stderr "Unable to read absolute path: ${1}"
+    return 1
+  fi
+}
+
+read_ini_value() {
+  local key=$1
+
+  awk -F '=' '/^\s*'${key}'\s*=*/ {
+                sub(/^ +/, "", $2);
+                sub(/ +$/, "", $2);
+                print $2;
+                exit;
+              }' "${nodeselektor_config_file}"
+}
+
+# Export environment variables
+set_env_vars() {
+  if [[ -n "${nodeselektor_nodejs_path}" ]]; then
+    export PATH=${nodeselektor_nodejs_path}/bin:$PATH
+    export NPM_CONFIG_PREFIX=${nodeselektor_nodejs_path}
+  fi
+}
+
+# Initialisation
+nodeselektor_init() {
+  local path=$1
+
+  if nodeselektor_root_path=$(find_root_path "${path}"); then
+    nodeselektor_config_file="${nodeselektor_root_path}/.node-selektor"
+    nodeselektor_nodejs_path="$(read_ini_value "node_path")"
+  fi
+
+  set_env_vars
+}
+# Given a set of arguments, finds the first argument that does
+# not start with a `-`
+get_script_argument() {
+  for arg in "$@"; do
+    case $arg in
+    -*)
+      continue;;
+    *)
+      echo $arg
+      break;;
+    esac
+  done
+}
+
+script_name=$(get_script_argument "$@")
+nodeselektor_init "${script_name}" || true
+
+if ! exec node "$@"; then
+  log_stderr "Unable to execute: " "$@"
+  exit $?
+fi

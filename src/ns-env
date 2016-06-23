@@ -1,0 +1,7 @@
+
+if nodeselektor_init $1; then
+  echo "export PATH=${nodeselektor_nodejs_path}/bin:\$PATH"
+  echo "export NPM_CONFIG_PREFIX=${nodeselektor_nodejs_path}"
+  echo "# Run this command to configure your shell:"
+  echo "# eval \$($0 $*)"
+fi
