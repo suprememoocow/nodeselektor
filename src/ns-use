@@ -1,22 +1,4 @@
 
-# Writes a key=value pair to `.node-selektor`
-write_ini_value() {
-  local key=$1
-  local value=$2
-
-  sed -i '' '/^ *'"${key}"' *=/{
-    h
-    s#=.*#='"${value}"'#
-  }
-  ${
-    x
-    /^$/{
-      s##'"${key}"'='"${value}"'#
-      H
-    }
-    x
-  }' "${nodeselektor_config_file}"
-}
 
 node_path=$1
 
@@ -49,7 +31,7 @@ fi
 nodeselektor_config_file="${package_root}/.node-selektor"
 if ! [[ -f "${nodeselektor_config_file}" ]]; then
   cat <<EOD > ${nodeselektor_config_file}
-; .node-selektor configuration file
+; nodeselektor configuration file
 ; do not check this into source control
 ; add it to .gitignore
 EOD
