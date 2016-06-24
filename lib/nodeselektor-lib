@@ -92,6 +92,20 @@ set_env_vars() {
   fi
 }
 
+validate_modules_version() {
+  modules_version=$(read_ini_value "node_modules_version")
+
+  current_modules_version=$(node -e 'console.log(process.versions.modules)')
+  if [[ "${modules_version}" != "${current_modules_version}" ]]; then
+    return 1
+  fi
+}
+
+save_current_modules_version() {
+  current_modules_version=$(node -e 'console.log(process.versions.modules)')
+  write_ini_value "node_modules_version" "${current_modules_version}"
+}
+
 # Initialisation
 nodeselektor_init() {
   local path=$1
@@ -99,7 +113,9 @@ nodeselektor_init() {
   if nodeselektor_root_path=$(find_root_path "${path}"); then
     nodeselektor_config_file="${nodeselektor_root_path}/.node-selektor"
     nodeselektor_nodejs_path="$(read_ini_value "node_path")"
+    set_env_vars
+    return
   fi
 
-  set_env_vars
+  return 1
 }

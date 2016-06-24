@@ -41,6 +41,9 @@ ns-npm install
 ns index.js
 # -> /path/to/node/4.3.3/bin/node index.js
 
+# Print out the current environment
+ns-env 
+
 # Note that `ns` works on the script's directory,
 # not the current working directory, so calling
 # a script from another directory will work

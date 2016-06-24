@@ -1,15 +1,13 @@
 
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 if ! nodeselektor_init .; then
   npm "$@"
   exit
 fi
 
-if ! ${script_dir}/ns-npm-validate; then
+if ! validate_modules_version; then
   rm -rf "${nodeselektor_root_path}/node_modules/"
 fi
 
 npm "$@"
 
-${script_dir}/ns-save-module-version
+save_current_modules_version

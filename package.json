@@ -5,9 +5,8 @@
   "main": "index.js",
   "bin": {
     "ns": "bin/ns",
+    "ns-npm": "bin/ns-npm",
     "ns-env": "bin/ns-env",
-    "ns-npm-validate": "bin/ns-npm-validate",
-    "ns-save-module-version": "bin/ns-save-module-version",
     "ns-use": "bin/ns-use"
   },
   "scripts": {
