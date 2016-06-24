@@ -51,7 +51,7 @@ ns-use --rebuild-npm --production --force /path/to/node/v6.0.0
 `nodeselektor` writes a file alongside the module's `package.json`, called `.node-selektor`. This typically looks something like:
 
 ```
-; .node-selektor configuration file
+; node-selektor configuration file
 ; do not check this into source control
 ; add it to .gitignore
 node_path=/Users/andrewn/.nvm/v0.10.36
