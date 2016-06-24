@@ -42,3 +42,22 @@ ns-use /path/to/node/v5.0.0
 ns-npm-reinit
 
 ```
+
+## Why not use `nvm`?
+
+`nvm` is great for a development environment, but it's less suited to server environments. It's implemented as a set of bash functions, which makes it difficult to use from cron scripts, init scripts and upstart. `nodeselektor` is primarily designed to run in a server environment, although it can be used in a development environment too.
+
+## How does it work
+
+`nodeselektor` writes a file alongside the module's `package.json`, called `.node-selektor`. This typically looks something like:
+
+```
+; .node-selektor configuration file
+; do not check this into source control
+; add it to .gitignore
+node_path=/Users/andrewn/.nvm/v0.10.36
+node_modules_version=11
+```
+
+`node_path` is the path to the nodejs installation that this project should use to run.
+`node_modules_version` refers to the moduel version (`process.versions.modules`) which was used during the last `ns-npm-reinit` run. This lets `nodeselektor` figure out whether to rebuild the `node_modules` directory for native modules.
