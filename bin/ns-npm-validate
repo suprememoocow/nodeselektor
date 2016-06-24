@@ -104,95 +104,15 @@ nodeselektor_init() {
   set_env_vars
 }
 
-usage() {
-  log_stderr $0 "[--rebuild-npm [--production --force]]  nodejs_installation_directory"
-}
-
-rebuild_npm=
-production=
-force=
-
-while [[ $# -gt 0 ]]
-do
-  case "$1" in
-      --rebuild-npm)
-      rebuild_npm=1
-      shift
-      ;;
-      --production)
-      production="--production"
-      shift
-      ;;
-      --force)
-      force=1
-      shift
-      ;;
-      --) # End of all options
-  	  shift
-  	  break;
-      ;;
-      -*) # Unknown option
-      usage
-  	  exit 1
-  	  ;;
-      *)  # No more options
-  	  break
-  	  ;;
-  esac
-done
-
-if [[ "$#" != 1 ]]; then
-  usage;
-  exit 1;
+if ! nodeselektor_init .; then
+  log_stderr ".node-selektor config not found"
+  exit 0
 fi
 
-node_path=$1
+modules_version=$(read_ini_value "node_modules_version")
 
-if ! [[ -d "${node_path}" ]]; then
-  log_stderr "${node_path} is not a directory"
-  usage;
-  exit 1;
-fi
-
-if ! [[ -e "${node_path}/bin/node" ]]; then
-  log_stderr "${node_path}/bin/node is not executable"
-  usage;
-  exit 1;
-fi
-
-if ! package_root=$(find_package_root_path .); then
-  log_stderr "Unable to locate package.json"
-  exit 1;
-fi
-
-nodeselektor_config_file="${package_root}/.node-selektor"
-if ! [[ -f "${nodeselektor_config_file}" ]]; then
-  cat <<EOD > ${nodeselektor_config_file}
-; nodeselektor configuration file
-; do not check this into source control
-; add it to .gitignore
-EOD
-fi
-
-abs_node_path=$(get_abs_path "${node_path}")
-
-write_ini_value "node_path" "${abs_node_path}"
-
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-if [[ -n "${rebuild_npm}" ]]; then
-  pushd . > /dev/null
-  cd "${package_root}"
-
-  if ! bash -x ${script_dir}/ns-npm-validate; then
-    rm -rf "./node_modules/"
-    npm install "${production}"
-    ${script_dir}/ns-save-module-version
-  else
-    if [[ -n "${force}" ]]; then
-      npm install "${production}"
-    fi
-  fi
-
-  popd > /dev/null
+current_modules_version=$(node -e 'console.log(process.versions.modules)')
+if [[ "${modules_version}" != "${current_modules_version}" ]]; then
+  echo "NO MATCH"
+  exit 1
 fi

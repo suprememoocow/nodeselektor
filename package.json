@@ -6,7 +6,8 @@
   "bin": {
     "ns": "bin/ns",
     "ns-env": "bin/ns-env",
-    "ns-npm-reinit": "bin/ns-npm-reinit",
+    "ns-npm-validate": "bin/ns-npm-validate",
+    "ns-save-module-version": "bin/ns-save-module-version",
     "ns-use": "bin/ns-use"
   },
   "scripts": {

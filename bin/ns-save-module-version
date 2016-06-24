@@ -109,18 +109,5 @@ if ! nodeselektor_init .; then
   exit 1
 fi
 
-node_module_match() {
-  local modules_version
-  modules_version=$(read_ini_value "node_modules_version")
-
-  current_modules_version=$(node -e 'console.log(process.versions.modules)')
-  if [[ "${modules_version}" != "${current_modules_version}" ]]; then
-    return 1
-  fi
-}
-
-if ! node_module_match; then
-  rm -rf "${nodeselektor_root_path}/node_modules/"
-  npm install "$@"
-  write_ini_value "node_modules_version" "${current_modules_version}"
-fi
+current_modules_version=$(node -e 'console.log(process.versions.modules)')
+write_ini_value "node_modules_version" "${current_modules_version}"

@@ -17,8 +17,11 @@ cd /nodeproject
 
 ns-use /path/to/node/4.3.3
 
-# Rebuild the node_modules directory if required
-ns-npm-reinit
+# Switch to a different version of node
+# install production dependencies
+# `force` will perform an npm install whether or not
+# the node modules version has changed
+ns-use --rebuild-npm --production --force /path/to/node/5.1.1
 
 # Use the configured node
 ns index.js
@@ -35,11 +38,7 @@ ns /nodeproject/index.js
 
 # Change the version of node
 cd /nodeproject
-ns-use /path/to/node/v5.0.0
-
-# Reinstall node_modules as binary dependencies will no
-# longer work
-ns-npm-reinit
+ns-use --rebuild-npm --production --force /path/to/node/v6.0.0
 
 ```
 

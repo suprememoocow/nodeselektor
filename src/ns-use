@@ -1,15 +1,47 @@
 
-
-node_path=$1
-
 usage() {
-  log_stderr $0 "nodejs_installation_directory"
+  log_stderr $0 "[--rebuild-npm [--production --force]]  nodejs_installation_directory"
 }
 
-if [[ -z "${node_path}" ]]; then
+rebuild_npm=
+production=
+force=
+
+while [[ $# -gt 0 ]]
+do
+  case "$1" in
+      --rebuild-npm)
+      rebuild_npm=1
+      shift
+      ;;
+      --production)
+      production="--production"
+      shift
+      ;;
+      --force)
+      force=1
+      shift
+      ;;
+      --) # End of all options
+  	  shift
+  	  break;
+      ;;
+      -*) # Unknown option
+      usage
+  	  exit 1
+  	  ;;
+      *)  # No more options
+  	  break
+  	  ;;
+  esac
+done
+
+if [[ "$#" != 1 ]]; then
   usage;
   exit 1;
 fi
+
+node_path=$1
 
 if ! [[ -d "${node_path}" ]]; then
   log_stderr "${node_path} is not a directory"
@@ -40,3 +72,22 @@ fi
 abs_node_path=$(get_abs_path "${node_path}")
 
 write_ini_value "node_path" "${abs_node_path}"
+
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+if [[ -n "${rebuild_npm}" ]]; then
+  pushd . > /dev/null
+  cd "${package_root}"
+
+  if ! bash -x ${script_dir}/ns-npm-validate; then
+    rm -rf "./node_modules/"
+    npm install "${production}"
+    ${script_dir}/ns-save-module-version
+  else
+    if [[ -n "${force}" ]]; then
+      npm install "${production}"
+    fi
+  fi
+
+  popd > /dev/null
+fi
