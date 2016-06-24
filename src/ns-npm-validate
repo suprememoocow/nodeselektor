@@ -8,6 +8,5 @@ modules_version=$(read_ini_value "node_modules_version")
 
 current_modules_version=$(node -e 'console.log(process.versions.modules)')
 if [[ "${modules_version}" != "${current_modules_version}" ]]; then
-  echo "NO MATCH"
   exit 1
 fi

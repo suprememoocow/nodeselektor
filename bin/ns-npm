@@ -104,14 +104,17 @@ nodeselektor_init() {
   set_env_vars
 }
 
+script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 if ! nodeselektor_init .; then
-  log_stderr ".node-selektor config not found"
-  exit 0
+  npm "$@"
+  exit
 fi
 
-modules_version=$(read_ini_value "node_modules_version")
-
-current_modules_version=$(node -e 'console.log(process.versions.modules)')
-if [[ "${modules_version}" != "${current_modules_version}" ]]; then
-  exit 1
+if ! ${script_dir}/ns-npm-validate; then
+  rm -rf "${nodeselektor_root_path}/node_modules/"
 fi
+
+npm "$@"
+
+${script_dir}/ns-save-module-version

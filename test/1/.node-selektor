@@ -1,5 +1,5 @@
 ; .node-selektor configuration file
 ; do not check this into source control
 ; add it to 
-node_path=/Users/andrewn/.nvm/v0.10.36
-node_modules_version=11
+node_path=/Users/andrewn/.nvm/versions/node/v5.10.1
+node_modules_version=47
