@@ -65,6 +65,25 @@ read_ini_value() {
               }' "${nodeselektor_config_file}"
 }
 
+# Writes a key=value pair to `.node-selektor`
+write_ini_value() {
+  local key=$1
+  local value=$2
+
+  sed -i '' '/^ *'"${key}"' *=/{
+    h
+    s#=.*#='"${value}"'#
+  }
+  ${
+    x
+    /^$/{
+      s##'"${key}"'='"${value}"'#
+      H
+    }
+    x
+  }' "${nodeselektor_config_file}"
+}
+
 # Export environment variables
 set_env_vars() {
   if [[ -n "${nodeselektor_nodejs_path}" ]]; then
@@ -134,7 +153,11 @@ fi
 
 nodeselektor_config_file="${package_root}/.node-selektor"
 if ! [[ -f "${nodeselektor_config_file}" ]]; then
-  touch "${nodeselektor_config_file}"
+  cat <<EOD > ${nodeselektor_config_file}
+; .node-selektor configuration file
+; do not check this into source control
+; add it to .gitignore
+EOD
 fi
 
 abs_node_path=$(get_abs_path "${node_path}")

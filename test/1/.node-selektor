@@ -1,2 +1,5 @@
-node_modules_version=48
-node_path=/Users/andrewn/.nvm/versions/node/v6.2.2
+; .node-selektor configuration file
+; do not check this into source control
+; add it to 
+node_path=/Users/andrewn/.nvm/v0.10.36
+node_modules_version=11

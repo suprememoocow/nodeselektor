@@ -65,6 +65,25 @@ read_ini_value() {
               }' "${nodeselektor_config_file}"
 }
 
+# Writes a key=value pair to `.node-selektor`
+write_ini_value() {
+  local key=$1
+  local value=$2
+
+  sed -i '' '/^ *'"${key}"' *=/{
+    h
+    s#=.*#='"${value}"'#
+  }
+  ${
+    x
+    /^$/{
+      s##'"${key}"'='"${value}"'#
+      H
+    }
+    x
+  }' "${nodeselektor_config_file}"
+}
+
 # Export environment variables
 set_env_vars() {
   if [[ -n "${nodeselektor_nodejs_path}" ]]; then

@@ -51,7 +51,7 @@ if ! [[ -f "${nodeselektor_config_file}" ]]; then
   cat <<EOD > ${nodeselektor_config_file}
 ; .node-selektor configuration file
 ; do not check this into source control
-; add it to `.gitignore`
+; add it to .gitignore
 EOD
 fi
 
