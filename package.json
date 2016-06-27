@@ -10,7 +10,7 @@
     "ns-use": "bin/ns-use"
   },
   "scripts": {
-    "prepublish": "./make.sh",
+    "prepublish": "make",
     "test": "./test/test.sh"
   },
   "repository": {

@@ -1,0 +1,2 @@
+make-binaries:
+	./build.sh

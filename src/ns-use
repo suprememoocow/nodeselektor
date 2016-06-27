@@ -1,7 +1,30 @@
 
 usage() {
-  log_stderr $0 "nodejs_installation_directory"
+  log_stderr $0 "[--reinit-npm] nodejs_installation_directory"
 }
+
+reinit_npm=false
+
+while [[ $# -gt 0 ]]
+do
+  case "$1" in
+      --reinit-npm)
+      reinit_npm=true
+      shift
+      ;;
+      --) # End of all options
+  	  shift
+  	  break;
+      ;;
+      -*) # Unknown option
+      usage
+  	  exit 1
+  	  ;;
+      *)  # No more options
+  	  break
+  	  ;;
+  esac
+done
 
 if [[ "$#" != 1 ]]; then
   usage;
@@ -39,3 +62,15 @@ fi
 abs_node_path=$(get_abs_path "${node_path}")
 
 write_ini_value "node_path" "${abs_node_path}"
+
+if [[ ${reinit_npm} == "true" ]]; then
+  if ! nodeselektor_init .; then
+    log_stderr "Unable to init"
+    exit 1
+  fi
+
+  if ! validate_modules_version; then
+    rm -rf "${nodeselektor_root_path}/node_modules/"
+    save_current_modules_version
+  fi
+fi
