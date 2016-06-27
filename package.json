@@ -11,7 +11,7 @@
   },
   "scripts": {
     "prepublish": "./make.sh",
-    "test": "./test.sh"
+    "test": "./test/test.sh"
   },
   "repository": {
     "type": "git",

@@ -12,6 +12,11 @@ log_stderr() {
   >&2 echo "$@"
 }
 
+real_path_directory() {
+  local from_path=$1
+  echo $(cd "${from_path}" && pwd)
+}
+
 find_root_path() {
   local from_path=$1
 
@@ -23,7 +28,7 @@ find_root_path() {
   done
 
   if [[ -n "${current_path}" ]]; then
-    get_abs_path "${current_path}"
+    get_abs_path $(real_path_directory "${current_path}")
   else
     return 1
   fi
@@ -40,7 +45,7 @@ find_package_root_path() {
   done
 
   if [[ -n "${current_path}" ]]; then
-    get_abs_path "${current_path}"
+    get_abs_path $(real_path_directory "${current_path}")
   else
     return 1
   fi
@@ -70,7 +75,7 @@ write_ini_value() {
   local key=$1
   local value=$2
 
-  sed -i '' '/^ *'"${key}"' *=/{
+  sed '/^ *'"${key}"' *=/{
     h
     s#=.*#='"${value}"'#
   }
@@ -81,7 +86,8 @@ write_ini_value() {
       H
     }
     x
-  }' "${nodeselektor_config_file}"
+  }' "${nodeselektor_config_file}" > "${nodeselektor_config_file}.tmp"
+  mv "${nodeselektor_config_file}.tmp" "${nodeselektor_config_file}"
 }
 
 # Export environment variables
