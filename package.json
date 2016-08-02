@@ -7,7 +7,8 @@
     "ns": "bin/ns",
     "ns-npm": "bin/ns-npm",
     "ns-env": "bin/ns-env",
-    "ns-use": "bin/ns-use"
+    "ns-use": "bin/ns-use",
+    "ns-version-matches": "bin/ns-version-matches"
   },
   "scripts": {
     "prepublish": "make",

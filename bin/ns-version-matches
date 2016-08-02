@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+# Global Variables
+nodeselektor_root_path=
+nodeselektor_config_file=
+nodeselektor_nodejs_path=
+
+log_stderr() {
+  >&2 echo "$@"
+}
+
+real_path_directory() {
+  local from_path=$1
+  echo $(cd "${from_path}" && pwd)
+}
+
+find_root_path() {
+  local from_path=$1
+
+  local current_path
+  current_path=$(get_abs_path "${from_path}")
+
+  while [[ -n "${current_path}" ]] && ! ( [[ -f "${current_path}/.node-selektor" ]] && [[ -f "${current_path}/package.json" ]]); do
+    current_path=${current_path%/*}
+  done
+
+  if [[ -n "${current_path}" ]]; then
+    get_abs_path $(real_path_directory "${current_path}")
+  else
+    return 1
+  fi
+}
+
+find_package_root_path() {
+  local from_path=$1
+
+  local current_path
+  current_path=$(get_abs_path "${from_path}")
+
+  while [[ -n "${current_path}" ]] && ! [[ -f "${current_path}/package.json" ]] ; do
+    current_path=${current_path%/*}
+  done
+
+  if [[ -n "${current_path}" ]]; then
+    get_abs_path $(real_path_directory "${current_path}")
+  else
+    return 1
+  fi
+}
+
+# Returns the absolute path for a file
+get_abs_path() {
+  if ! echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"; then
+    log_stderr "Unable to read absolute path: ${1}"
+    return 1
+  fi
+}
+
+read_ini_value() {
+  local key=$1
+
+  awk -F '=' '/^\s*'${key}'\s*=*/ {
+                sub(/^ +/, "", $2);
+                sub(/ +$/, "", $2);
+                print $2;
+                exit;
+              }' "${nodeselektor_config_file}"
+}
+
+# Writes a key=value pair to `.node-selektor`
+write_ini_value() {
+  local key=$1
+  local value=$2
+
+  sed '/^ *'"${key}"' *=/{
+    h
+    s#=.*#='"${value}"'#
+  }
+  ${
+    x
+    /^$/{
+      s##'"${key}"'='"${value}"'#
+      H
+    }
+    x
+  }' "${nodeselektor_config_file}" > "${nodeselektor_config_file}.tmp"
+  mv "${nodeselektor_config_file}.tmp" "${nodeselektor_config_file}"
+}
+
+# Export environment variables
+set_env_vars() {
+  if [[ -n "${nodeselektor_nodejs_path}" ]]; then
+    export PATH=${nodeselektor_nodejs_path}/bin:$PATH
+    export NPM_CONFIG_PREFIX=${nodeselektor_nodejs_path}
+  fi
+}
+
+validate_modules_version() {
+  modules_version=$(read_ini_value "node_modules_version")
+
+  current_modules_version=$(node -e 'console.log(process.versions.modules)')
+  if [[ "${modules_version}" != "${current_modules_version}" ]]; then
+    return 1
+  fi
+}
+
+save_current_modules_version() {
+  current_modules_version=$(node -e 'console.log(process.versions.modules)')
+  write_ini_value "node_modules_version" "${current_modules_version}"
+}
+
+# Initialisation
+nodeselektor_init() {
+  local path=$1
+
+  if nodeselektor_root_path=$(find_root_path "${path}"); then
+    nodeselektor_config_file="${nodeselektor_root_path}/.node-selektor"
+    nodeselektor_nodejs_path="$(read_ini_value "node_path")"
+    set_env_vars
+    return
+  fi
+
+  return 1
+}
+
+if ! nodeselektor_init "${1:-.}"; then
+  exit 1
+fi
+
+if ! validate_modules_version; then
+  exit 1
+fi
+
+exit 0
