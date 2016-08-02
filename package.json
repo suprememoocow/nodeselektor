@@ -1,6 +1,6 @@
 {
   "name": "nodeselektor",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "Utility to help manage multiple version of nodejs on a system",
   "main": "index.js",
   "bin": {
