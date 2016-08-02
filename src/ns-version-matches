@@ -1,3 +1,11 @@
+##
+## Ensures that a the node_modules directory matches the
+## `.node-selecktor` config
+## Usage:
+##   `ns-version-matches [directory] [nodejs-install-dir]`
+##    - directory directory for the installation. Defaults to cwd
+##    - optional node installation to check compatibility with
+##
 
 if ! nodeselektor_init "${1:-.}"; then
   exit 1
@@ -6,5 +14,15 @@ fi
 if ! validate_modules_version; then
   exit 1
 fi
+
+required_node_install_directory=${2:-}
+
+if [[ -n ${required_node_install_directory} ]]; then
+  required_modules_version=$(${required_node_install_directory}/bin/node -e 'console.log(process.versions.modules)')
+  if [[ ${required_modules_version} != ${current_modules_version} ]]; then
+    exit 1
+  fi
+fi
+
 
 exit 0

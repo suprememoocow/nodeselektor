@@ -14,6 +14,14 @@ cd ${script_dir}
 [[ $(../bin/ns --version 1/lib/index.js) == "v5.10.1" ]];
 [[ $(../bin/ns --version 1/index.js) == "v5.10.1" ]];
 
+../bin/ns-version-matches 1/
+../bin/ns-version-matches 1/ /Users/andrewn/.nvm/versions/node/v5.10.1
+
+if ../bin/ns-version-matches 1/ /Users/andrewn/.nvm/v0.10.40/; then
+  echo "ns-version-matches should fail"
+fi
+
+
 source ../lib/nodeselektor-lib
 
 [[ $(find_package_root_path .) == "$(cd .. && pwd)" ]]

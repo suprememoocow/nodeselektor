@@ -125,6 +125,12 @@ nodeselektor_init() {
 
   return 1
 }
+##
+## `ns-env` displays env configuration
+## Usage:
+##   `ns-env [directory]`
+##    - directory directory for the installation
+##
 
 if nodeselektor_init "${1:-.}"; then
   echo "export PATH=${nodeselektor_nodejs_path}/bin:\$PATH"

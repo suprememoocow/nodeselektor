@@ -125,6 +125,13 @@ nodeselektor_init() {
 
   return 1
 }
+##
+## Persist the node-selektor configuration
+## Usage:
+##   `ns-use [--reinit-npm] [nodejs-install-dir]`
+##    - reinit-npm delete the `node_modules` directory on mismatch
+##    - nodejs-install-dir: node installation to check compatibility with
+##
 
 usage() {
   log_stderr $0 "[--reinit-npm] nodejs_installation_directory"
